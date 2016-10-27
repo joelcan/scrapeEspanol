@@ -11,8 +11,10 @@ import sys
 #TODO: Handle when infinitive is not found.
 #TODO: Handle when not all conjugations are listed.
 #TODO: Convert parameter to lower case.
+#TODO: Allow inputting a csv file that contains a list of infinitives to process.
 
-def scrapeWebpage():
+def scrapeWebpage(url):
+    print('Add code to handle: ' + url)
 
 def displayUsage():
     print("Usage:")
@@ -21,9 +23,11 @@ def displayUsage():
 
 def main():
     """Handle command line parameters"""
-    if len(sys.argv) != 1:
+    if len(sys.argv) != 2:
         displayUsage()
-    scrapeWebpage("http://www.spanishdict.com/conjugate/", sys.argv[1])
+    else:
+        scrapeWebpage(
+                'http://www.spanishdict.com/conjugate/{}'.format(sys.argv[1]))
 
 if __name__ == "__main__":
     main()
