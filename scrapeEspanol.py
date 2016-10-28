@@ -5,30 +5,24 @@ scrapeEspanol:
 Scrape all verb conjugations from SpanishDict.com for a specific verb.
 """
 
-from __future__ import print_function #This *must* be the first line
-import sys
+import scrapy
 
-#TODO: Handle when infinitive is not found.
-#TODO: Handle when not all conjugations are listed.
-#TODO: Convert parameter to lower case.
-#TODO: Allow inputting a csv file that contains a list of infinitives to process.
 
-def scrapeWebpage(url):
-    print('Add code to handle: ' + url)
+class QuotesSpider(scrapy.Spider):
+    name = "quotes"
+    start_urls = [
+        'http://www.spanishdict.com/conjugate/',
+    ]
 
-def displayUsage():
-    print("Usage:")
-    print("  scrapeEspanol <infinitive>")
-    print("It saves a CSV file containing all the conjugations.")
+    def parse(self, response):
+        for quote in response.css('div.quote'):
+            yield {
+                'text': quote.css('span.text::text').extract_first(),
+                'author': quote.xpath('span/small/text()').extract_first(),
+            }
 
-def main():
-    """Handle command line parameters"""
-    if len(sys.argv) != 2:
-        displayUsage()
-    else:
-        scrapeWebpage(
-                'http://www.spanishdict.com/conjugate/{}'.format(sys.argv[1]))
-
-if __name__ == "__main__":
-    main()
+        next_page = response.css('li.next a::attr("href")').extract_first()
+        if next_page is not None:
+            next_page = response.urljoin(next_page)
+            yield scrapy.Request(next_page, callback=self.parse)
 
