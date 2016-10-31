@@ -7,8 +7,8 @@ Scrape all verb conjugations from SpanishDict.com for a specific verb.
 
 from __future__ import print_function #This *must* be the first line
 import sys
-from lxml import html
-import requests
+import urllib2
+from bs4 import BeautifulSoup
 
 #TODO: Handle when infinitive is not found.
 #TODO: Handle when not all conjugations are listed.
@@ -16,7 +16,23 @@ import requests
 #TODO: Allow inputting a csv file that contains a list of infinitives to process.
 
 def scrapeWebpage(url):
-    print('Add code to handle: ' + url)
+    page = urllib2.urlopen(url)
+    soup = BeautifulSoup(page, "html.parser")
+    
+    curr = soup.find('div', {'class': 'conj-row'}).find('span')
+    gerund = curr.string
+    if gerund.startswith('&nbsp'):
+        gerund = gerund[5:]
+    if gerund.endswith(';'):
+        gerund = gerund[:-1]
+
+    #curr = soup.find('div', {'class': 'conj-row'}).find('span')
+    #participle = curr.string
+    #if participle.startswith('&nbsp'):
+    #    participle = participle[5:]
+    #if participle.endswith(';'):
+    #    participle = participle[:-1]
+    #print(participle)
 
 def displayUsage():
     print("Usage:")
