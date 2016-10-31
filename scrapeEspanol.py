@@ -15,29 +15,24 @@ from bs4 import BeautifulSoup
 #TODO: Convert parameter to lower case.
 #TODO: Allow inputting a csv file that contains a list of infinitives to process.
 
+def cleanText(string):
+    if string.startswith('&nbsp'):
+        string = string[5:]
+    if string.endswith(';'):
+        string = string[:-1]
+    return string
+
 def scrapeWebpage(url):
     page = urllib2.urlopen(url)
     soup = BeautifulSoup(page, "html.parser")
 
-    curr = soup.find(text='Gerund:')
-    while getattr(curr, 'name', None) != 'span':
-        curr = curr.next
-    gerund = curr.string
-    if gerund.startswith('&nbsp'):
-        gerund = gerund[5:]
-    if gerund.endswith(';'):
-        gerund = gerund[:-1]
+    gerund = cleanText(soup.find(text='Gerund:').findNext('span').string)
     print(gerund)
 
-    curr = soup.find(text='Participle:')
-    while getattr(curr, 'name', None) != 'span':
-        curr = curr.next
-    participle = curr.string
-    if participle.startswith('&nbsp'):
-        participle = participle[5:]
-    if participle.endswith(';'):
-        participle = participle[:-1]
+    participle = cleanText(soup.find(text='Participle:').findNext('span').string)
     print(participle)
+
+
 
 def displayUsage():
     print("Usage:")
