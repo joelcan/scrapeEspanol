@@ -18,21 +18,26 @@ from bs4 import BeautifulSoup
 def scrapeWebpage(url):
     page = urllib2.urlopen(url)
     soup = BeautifulSoup(page, "html.parser")
-    
-    curr = soup.find('div', {'class': 'conj-row'}).find('span')
+
+    curr = soup.find(text='Gerund:')
+    while getattr(curr, 'name', None) != 'span':
+        curr = curr.next
     gerund = curr.string
     if gerund.startswith('&nbsp'):
         gerund = gerund[5:]
     if gerund.endswith(';'):
         gerund = gerund[:-1]
+    print(gerund)
 
-    #curr = soup.find('div', {'class': 'conj-row'}).find('span')
-    #participle = curr.string
-    #if participle.startswith('&nbsp'):
-    #    participle = participle[5:]
-    #if participle.endswith(';'):
-    #    participle = participle[:-1]
-    #print(participle)
+    curr = soup.find(text='Participle:')
+    while getattr(curr, 'name', None) != 'span':
+        curr = curr.next
+    participle = curr.string
+    if participle.startswith('&nbsp'):
+        participle = participle[5:]
+    if participle.endswith(';'):
+        participle = participle[:-1]
+    print(participle)
 
 def displayUsage():
     print("Usage:")
