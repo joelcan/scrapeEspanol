@@ -10,10 +10,11 @@ import sys
 import urllib2
 from bs4 import BeautifulSoup
 import re
+import csv
+import io
 
 #TODO: Handle when infinitive is not found.
 #TODO: Handle when not all conjugations are listed.
-#TODO: Convert parameter to lower case.
 #TODO: Allow inputting a csv file that contains a list of infinitives to process.
 
 def cleanText(string):
@@ -43,7 +44,11 @@ def sortToWordList(itemList, wordList, startIndex, tableWidth):
                 index %= 6*tableWidth
                 index += 1
 
-def scrapeWebpage(url):
+def scrapeSpanishdict(infinitive):
+    """
+    Scrapes conjugations from SpanishDict.com
+    """
+    url = 'http://www.spanishdict.com/conjugate/{}'.format(infinitive)
     page = urllib2.urlopen(url)
     soup = BeautifulSoup(page, "html.parser")
     wordList = [None] * 61
@@ -59,21 +64,31 @@ def scrapeWebpage(url):
     startIndex = startIndex + tableWidth*6
     tableWidth = 1
     sortToWordList(itemList, wordList, startIndex, tableWidth)
-    for item in wordList:
-        print(item)
+    return wordList
 
 def displayUsage():
     print("Usage:")
-    print("  scrapeEspanol <infinitive>")
+    print("  scrapeEspanol <fileName>")
+    print("fileName contains a list of Spanish infinitives to process.")
     print("It saves a CSV file containing all the conjugations.")
+
+def processFile(fileName):
+    with io.open(fileName, 'r', encoding='utf8') as f:
+        infinitiveList = f.readlines()
+    listOfLists = []
+    for infinitive in infinitiveList:
+        wordList = scrapeSpanishdict(infinitive)
+        listOfLists.append(wordList)
+    with io.open('spanishConjugations.csv', 'w', encoding='utf8') as f:
+        writer = csv.writer(f)
+        writer.writerows(listOfLists)
 
 def main():
     """Handle command line parameters"""
     if len(sys.argv) != 2:
         displayUsage()
     else:
-        scrapeWebpage(
-                'http://www.spanishdict.com/conjugate/{}'.format(sys.argv[1]))
+        processFile(sys.argv[1])
 
 if __name__ == "__main__":
     main()
