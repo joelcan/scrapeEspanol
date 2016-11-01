@@ -10,18 +10,16 @@ import sys
 import urllib2
 from bs4 import BeautifulSoup
 import re
-import unicodecsv as csv
-import io
 
 #TODO: Handle when infinitive is not found.
 #TODO: Handle when not all conjugations are listed.
+#TODO: Convert parameter to lower case.
 #TODO: Allow inputting a csv file that contains a list of infinitives to process.
 
 def cleanText(string):
     if string.startswith('&nbsp'):
         string = string[5:]
-    if string.endswith(';'):
-        string = string[:-1]
+    string.replace(';', '')
     return string
 
 def removeTags(string):
@@ -36,24 +34,21 @@ def sortToWordList(itemList, wordList, startIndex, tableWidth):
     index = 0
     endIndex = startIndex + tableWidth * 6
     for item in itemList[startIndex:endIndex]:
-        word = removeTags(str(item)).encode('utf-8')
+        word = removeTags(str(item))
         if word != '-':  #Skip the slot for 1st person imperative
-            wordList[startIndex+2+index] = word
+            wordList[startIndex+3+index] = word
             index += 6
             if index >= 6*tableWidth:
                 index %= 6*tableWidth
                 index += 1
 
-def scrapeSpanishdict(infinitive):
-    """
-    Scrapes conjugations from SpanishDict.com
-    """
-    url = 'http://www.spanishdict.com/conjugate/{}'.format(infinitive)
+def scrapeWebpage(url, infinitive):
     page = urllib2.urlopen(url)
     soup = BeautifulSoup(page, "html.parser")
-    wordList = [None] * 61
-    wordList[0] = cleanText(soup.find(text='Gerund:').findNext('span').string).encode('utf-8')
-    wordList[1] = cleanText(soup.find(text='Participle:').findNext('span').string).encode('utf-8')
+    wordList = [None] * 62
+    wordList[0] = infinitive
+    wordList[1] = cleanText(soup.find(text='Gerund:').findNext('span').string)
+    wordList[2] = cleanText(soup.find(text='Participle:').findNext('span').string)
     itemList = soup.findAll('td', {'class': 'vtable-word'})
     startIndex = 0
     tableWidth = 5
@@ -64,31 +59,20 @@ def scrapeSpanishdict(infinitive):
     startIndex = startIndex + tableWidth*6
     tableWidth = 1
     sortToWordList(itemList, wordList, startIndex, tableWidth)
-    return wordList
+    for item in wordList:
+        print(item)
 
 def displayUsage():
     print("Usage:")
-    print("  scrapeEspanol <fileName>")
-    print("fileName contains a list of Spanish infinitives to process.")
+    print("  scrapeEspanol <infinitive>")
     print("It saves a CSV file containing all the conjugations.")
-
-def processFile(fileName):
-    with open(fileName, 'r') as f:
-        infinitiveList = f.readlines()
-    listOfLists = []
-    for infinitive in infinitiveList:
-        wordList = scrapeSpanishdict(infinitive)
-        listOfLists.append(wordList)
-    with io.open('spanishConjugations.csv', 'w', encoding='utf8') as f:
-        writer = csv.writer(f)
-        writer.writerows(listOfLists)
 
 def main():
     """Handle command line parameters"""
     if len(sys.argv) != 2:
         displayUsage()
     else:
-        processFile(sys.argv[1])
+        scrapeWebpage('http://www.spanishdict.com/conjugate/{}'.format(sys.argv[1]), sys.argv[1])
 
 if __name__ == "__main__":
     main()
