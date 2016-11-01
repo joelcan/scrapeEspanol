@@ -28,22 +28,39 @@ def removeTags(string):
     cleanString = re.sub(cleanre, '', string)
     return cleanString
 
+def sortToWordList(itemList, wordList, startIndex, tableWidth):
+    """
+    wordList must be initialized with the same number of elements as itemList
+    """
+    index = 0
+    endIndex = startIndex + tableWidth * 6
+    for item in itemList[startIndex:endIndex]:
+        word = removeTags(str(item))
+        if word != '-':  #Skip the slot for 1st person imperative
+            wordList[startIndex+2+index] = word
+            index += 6
+            if index >= 6*tableWidth:
+                index %= 6*tableWidth
+                index += 1
+
 def scrapeWebpage(url):
     page = urllib2.urlopen(url)
     soup = BeautifulSoup(page, "html.parser")
-
-    gerund = cleanText(soup.find(text='Gerund:').findNext('span').string)
-    print(gerund)
-
-    participle = cleanText(soup.find(text='Participle:').findNext('span').string)
-    print(participle)
-    print('---')
-
-    items = soup.findAll('td', {'class': 'vtable-word'})
-    for item in items[:60]:
-        word = removeTags(str(item))
-        print(word)
-
+    wordList = [None] * 61
+    wordList[0] = cleanText(soup.find(text='Gerund:').findNext('span').string)
+    wordList[1] = cleanText(soup.find(text='Participle:').findNext('span').string)
+    itemList = soup.findAll('td', {'class': 'vtable-word'})
+    startIndex = 0
+    tableWidth = 5
+    sortToWordList(itemList, wordList, startIndex, tableWidth)
+    startIndex = startIndex + tableWidth*6
+    tableWidth = 4
+    sortToWordList(itemList, wordList, startIndex, tableWidth)
+    startIndex = startIndex + tableWidth*6
+    tableWidth = 1
+    sortToWordList(itemList, wordList, startIndex, tableWidth)
+    for item in wordList:
+        print(item)
 
 def displayUsage():
     print("Usage:")
