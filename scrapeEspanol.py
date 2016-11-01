@@ -19,6 +19,8 @@ import re
 def cleanText(string):
     if string.startswith('&nbsp'):
         string = string[5:]
+    if string.endswith(';'):
+        string = string[:-1]
     string.replace(';', '')
     return string
 
