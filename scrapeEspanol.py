@@ -10,7 +10,7 @@ import sys
 import urllib2
 from bs4 import BeautifulSoup
 import re
-import csv
+import unicodecsv as csv
 import io
 
 #TODO: Handle when infinitive is not found.
@@ -36,7 +36,7 @@ def sortToWordList(itemList, wordList, startIndex, tableWidth):
     index = 0
     endIndex = startIndex + tableWidth * 6
     for item in itemList[startIndex:endIndex]:
-        word = removeTags(str(item))
+        word = removeTags(str(item)).encode('utf-8')
         if word != '-':  #Skip the slot for 1st person imperative
             wordList[startIndex+2+index] = word
             index += 6
@@ -52,8 +52,8 @@ def scrapeSpanishdict(infinitive):
     page = urllib2.urlopen(url)
     soup = BeautifulSoup(page, "html.parser")
     wordList = [None] * 61
-    wordList[0] = cleanText(soup.find(text='Gerund:').findNext('span').string)
-    wordList[1] = cleanText(soup.find(text='Participle:').findNext('span').string)
+    wordList[0] = cleanText(soup.find(text='Gerund:').findNext('span').string).encode('utf-8')
+    wordList[1] = cleanText(soup.find(text='Participle:').findNext('span').string).encode('utf-8')
     itemList = soup.findAll('td', {'class': 'vtable-word'})
     startIndex = 0
     tableWidth = 5
@@ -73,7 +73,7 @@ def displayUsage():
     print("It saves a CSV file containing all the conjugations.")
 
 def processFile(fileName):
-    with io.open(fileName, 'r', encoding='utf8') as f:
+    with open(fileName, 'r') as f:
         infinitiveList = f.readlines()
     listOfLists = []
     for infinitive in infinitiveList:
